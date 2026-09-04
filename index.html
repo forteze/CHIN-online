@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nexoria</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- BARRA SUPERIOR -->
+
+    <header class="navbar">
+
+        <div class="logo">
+            NEXORIA
+        </div>
+
+        <nav class="menu">
+            <a href="#inicio">INICIO</a>
+            <a href="#historia">HISTORIA</a>
+            <a href="#jefes">JEFES</a>
+            <a href="#tutorial">TUTORIAL</a>
+        </nav>
+
+        <button id="btnNavbar">
+            JUGAR
+        </button>
+
+    </header>
+
+
+    <!-- PORTADA -->
+
+    <main id="inicio" class="hero">
+
+        <div class="fondo"></div>
+
+        <div class="contenido">
+
+            <p class="subtitulo">
+                PREPARATE PARA LA BATALLA
+            </p>
+
+            <h1>NEXORIA</h1>
+
+            <p class="descripcion">
+                Recolectá munición, enfrentá enemigos
+                y derrotá a los jefes finales.
+            </p>
+
+            <button id="btnJugar">
+                ▶ JUGAR AHORA
+            </button>
+
+        </div>
+
+    </main>
+   
+    <section id="pantallaJuego">
+        <button id="btnVolver">← VOLVER</button>
+        <h2>NEXORIA</h2>
+        
+    
+        <div id="zonaJuego">
+        <p>Preparando el juego...</p>
+    </div>
+    <div id="pantallaGameOver">
+
+    <h2>GAME OVER</h2>
+
+    <p>Has sido derrotado.</p>
+
+    <button id="btnReintentar">
+        REINTENTAR
+    </button>
+
+    <button id="btnInicio">
+        VOLVER AL INICIO
+    </button>
+    </div>
+
+    </section>
+
+
+    <!-- HISTORIA -->
+
+    <section id="historia" class="seccion">
+
+        <p class="miniTitulo">LA HISTORIA</p>
+
+        <h2>La batalla por Nexoria</h2>
+
+        <p>
+            Nexoria cayó en el caos después de que una misteriosa
+            fuerza atacara el planeta. Ahora sus habitantes deben
+            recuperar las zonas perdidas y enfrentarse a poderosos
+            enemigos.
+        </p>
+
+    </section>
+
+
+    <!-- JEFES -->
+
+    <section id="jefes" class="seccion oscura">
+
+        <p class="miniTitulo">ENEMIGOS</p>
+
+        <h2>Jefes finales</h2>
+
+        <div class="jefes">
+
+            <div class="jefe">
+                <div class="icono">👹</div>
+                <h3>EL GUARDIÁN</h3>
+                <p>Protege las primeras zonas de Nexoria.</p>
+            </div>
+
+            <div class="jefe">
+                <div class="icono">👾</div>
+                <h3>EL MUTANTE</h3>
+                <p>Un enemigo rápido y difícil de derrotar.</p>
+            </div>
+
+            <div class="jefe">
+                <div class="icono">☠️</div>
+                <h3>EL SOBERANO</h3>
+                <p>El jefe final de Nexoria.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TUTORIAL -->
+
+    <section id="tutorial" class="seccion">
+
+        <p class="miniTitulo">APRENDÉ</p>
+
+        <h2>¿Cómo jugar?</h2>
+
+        <div class="tutorial">
+
+            <div>
+                <span>⌨️</span>
+                <h3>MOVETE</h3>
+                <p>Usá las flechas del teclado.</p>
+            </div>
+
+            <div>
+                <span>🔫</span>
+                <h3>DISPARÁ</h3>
+                <p>Usá tu munición para eliminar enemigos.</p>
+            </div>
+
+            <div>
+                <span>👑</span>
+                <h3>DERROTÁ</h3>
+                <p>Vencés al jefe para avanzar.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="script.js"></script>
+
+</body>
+</html>
