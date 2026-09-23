@@ -1,1 +1,1 @@
-Juegi
+Juego
