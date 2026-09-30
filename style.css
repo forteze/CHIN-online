@@ -416,354 +416,360 @@ body {
 }
 
 
-/* Mapa */
+/* Mapa y fondo con parallax */
+
+:root {
+    --formaMontana: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200' preserveAspectRatio='none'%3E%3Cpath d='M0 200V120L120 60 220 130 340 40 470 140 600 70 720 120 800 120V200Z'/%3E%3C/svg%3E");
+    --formaCiudad: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 140' preserveAspectRatio='none'%3E%3Cpath d='M0 140V80H40V40H90V90H130V20H190V70H230V50H290V100H340V30H400V80H450V60H500V140Z'/%3E%3C/svg%3E");
+}
+
+/* Cada zona tiene su paleta */
+#zonaJuego {
+    --cielo1: #151a24; --cielo2: #090b10; --lejos: #1d2536; --cerca: #121722;
+    --bicho: #7bd234; --acento: #ff3030; --bloque: #555b66; --bloqueBorde: #737985;
+    background: linear-gradient(var(--cielo1), var(--cielo2));
+}
+
+#zonaJuego.zona2 {
+    --cielo1: #1b1533; --cielo2: #0a0912; --lejos: #2b2350; --cerca: #181330;
+    --bicho: #c56cf0; --acento: #b45cff; --bloque: #5b5470; --bloqueBorde: #8478a8;
+}
+
+#zonaJuego.zona3 {
+    --cielo1: #2a0d12; --cielo2: #0d0405; --lejos: #4a1a22; --cerca: #2a0f14;
+    --bicho: #ffa03c; --acento: #ff7a1a; --bloque: #6a4a44; --bloqueBorde: #9a716a;
+}
+
+.capa {
+    position: absolute;
+    left: 0;
+    width: calc(100% + 800px);
+    pointer-events: none;
+    will-change: transform;
+    z-index: 0;
+}
+
+.capaEstrellas {
+    top: 0;
+    height: 60%;
+    opacity: 0.7;
+    background-image:
+        radial-gradient(circle 2px at 30px 40px, #fff, transparent),
+        radial-gradient(circle 1.5px at 120px 90px, #fff, transparent),
+        radial-gradient(circle 2px at 210px 20px, #cfe8ff, transparent),
+        radial-gradient(circle 1.5px at 260px 120px, #fff, transparent);
+    background-size: 300px 160px;
+}
+
+.capaMontanas,
+.capaCiudad {
+    bottom: 45px;
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+    -webkit-mask-position: 0 100%;
+    mask-position: 0 100%;
+}
+
+.capaMontanas {
+    height: 200px;
+    background: var(--lejos);
+    -webkit-mask-image: var(--formaMontana);
+    mask-image: var(--formaMontana);
+    -webkit-mask-size: 800px 200px;
+    mask-size: 800px 200px;
+}
+
+.capaCiudad {
+    height: 140px;
+    background: var(--cerca);
+    -webkit-mask-image: var(--formaCiudad);
+    mask-image: var(--formaCiudad);
+    -webkit-mask-size: 500px 140px;
+    mask-size: 500px 140px;
+}
 
 #mapa {
     position: absolute;
-    width: 1800px;
-    height: 400px;
     left: 0;
     top: 0;
+    height: 400px;
+    z-index: 1;
+    will-change: transform;
+}
+
+#aviso {
+    position: absolute;
+    top: 36%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px var(--acento);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 60;
+}
+
+#aviso.visible {
+    opacity: 1;
 }
 
 
-/* Suelo */
+/* Escenario */
 
-#suelo {
+.suelo {
     position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 1800px;
-    height: 45px;
     background: #292d35;
-    border-top: 4px solid #ff3030;
+    border-top: 4px solid var(--acento);
     z-index: 4;
 }
 
-
-/* Personaje */
-
-#jugador {
+.bloque,
+.plataforma {
     position: absolute;
-    width: 45px;
-    height: 75px;
-    left: 70px;
-    bottom: 45px;
-    z-index: 30;
+    background: var(--bloque);
+    border: 2px solid var(--bloqueBorde);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35);
+    z-index: 15;
 }
 
-.cabeza {
+.plataforma {
+    border-top: 3px solid var(--acento);
+}
+
+.item {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    left: 7px;
-    top: 0;
-    background: #f0c29b;
-    border-radius: 50%;
-    border: 2px solid #b87955;
-    z-index: 5;
-}
-
-.pelo {
-    position: absolute;
-    width: 32px;
-    height: 14px;
-    left: -3px;
-    top: -3px;
-    background: #17191f;
-    border-radius: 15px 15px 5px 5px;
-}
-
-.ojo {
-    position: absolute;
-    width: 4px;
-    height: 5px;
-    background: #111;
-    border-radius: 50%;
-    top: 14px;
-}
-
-.ojo1 {
-    left: 8px;
-}
-
-.ojo2 {
-    right: 8px;
-}
-
-.boca {
-    position: absolute;
-    width: 9px;
-    height: 4px;
-    left: 9px;
-    bottom: 5px;
-    border-bottom: 2px solid #9b4c4c;
-    border-radius: 50%;
-}
-
-.cuerpo {
-    position: absolute;
-    width: 34px;
-    height: 31px;
-    left: 5px;
-    top: 27px;
-    background: #303640;
-    border-radius: 7px 7px 4px 4px;
-    border: 2px solid #1b1e24;
-    z-index: 3;
-}
-
-.campera {
-    position: absolute;
-    width: 20px;
-    height: 27px;
-    left: 5px;
-    top: 0;
-    background: #ff3030;
-    border-radius: 4px;
-}
-
-.cinturon {
-    position: absolute;
-    width: 30px;
-    height: 5px;
-    left: 0;
-    bottom: 4px;
-    background: #17191f;
-}
-
-.brazo {
-    position: absolute;
-    width: 9px;
-    height: 28px;
-    background: #303640;
-    border-radius: 5px;
-    top: 30px;
-    z-index: 2;
-}
-
-.brazoIzquierdo {
-    left: -3px;
-    transform: rotate(15deg);
-}
-
-.brazoDerecho {
-    right: -3px;
-    transform: rotate(-20deg);
-}
-
-.arma {
-    position: absolute;
-    width: 20px;
-    height: 7px;
-    right: -15px;
-    top: 15px;
-    background: #111;
-    border-radius: 2px;
-    transform: rotate(-10deg);
-}
-
-.arma::after {
-    content: "";
-    position: absolute;
-    width: 7px;
-    height: 4px;
-    right: -5px;
-    top: 1px;
-    background: #555;
-}
-
-.pierna {
-    position: absolute;
-    width: 11px;
-    height: 20px;
-    background: #20242b;
-    top: 55px;
-    border-radius: 3px;
-}
-
-.pierna.izquierda {
-    left: 8px;
-}
-
-.pierna.derecha {
-    right: 8px;
-}
-
-.pierna::after {
-    content: "";
-    position: absolute;
-    width: 15px;
-    height: 7px;
-    bottom: -4px;
-    background: #111;
-    border-radius: 3px;
-}
-
-.pierna.izquierda::after {
-    left: -2px;
-}
-
-.pierna.derecha::after {
-    right: -2px;
-}
-
-
-/* Balas */
-
-.bala-recolectable {
-    position: absolute;
-    font-size: 24px;
+    font-size: 22px;
+    line-height: 24px;
+    text-align: center;
     z-index: 20;
     animation: flotar 1s infinite alternate;
 }
 
 @keyframes flotar {
-    from {
-        transform: translateY(0);
-    }
-
-    to {
-        transform: translateY(-7px);
-    }
-}
-
-.bala1 {
-    left: 300px;
-    bottom: 120px;
-}
-
-.bala2 {
-    left: 550px;
-    bottom: 170px;
-}
-
-.bala3 {
-    left: 800px;
-    bottom: 120px;
-}
-
-.bala4 {
-    left: 1080px;
-    bottom: 140px;
-}
-
-.bala5 {
-    left: 1210px;
-    bottom: 215px;
-}
-
-.bala6 {
-    left: 1370px;
-    bottom: 160px;
-}
-
-.bala7 {
-    left: 1480px;
-    bottom: 235px;
+    from { transform: translateY(0); }
+    to { transform: translateY(-7px); }
 }
 
 
-/* Obstáculos */
+/* Enemigos, jefes y disparos */
 
-.obstaculo {
+.enemigo {
     position: absolute;
-    background: #555b66;
-    border: 2px solid #737985;
-    z-index: 15;
-    box-shadow: 0 5px 0 #252830;
-}
-
-
-/* Bloques */
-
-.obstaculo1 {
-    left: 200px;
+    left: 0;
     bottom: 45px;
-    width: 80px;
-    height: 60px;
-}
-
-.obstaculo2 {
-    left: 430px;
-    bottom: 45px;
-    width: 100px;
-    height: 100px;
-}
-
-.obstaculo3 {
-    left: 700px;
-    bottom: 45px;
-    width: 100px;
-    height: 70px;
-}
-
-
-/* Plataformas */
-
-.obstaculo4 {
-    left: 900px;
-    bottom: 150px;
-    width: 140px;
-    height: 25px;
-}
-
-.obstaculo5 {
-    left: 1080px;
-    bottom: 100px;
-    width: 120px;
-    height: 25px;
-}
-
-.obstaculo6 {
-    left: 1230px;
-    bottom: 180px;
-    width: 120px;
-    height: 25px;
-}
-
-.obstaculo7 {
-    left: 1380px;
-    bottom: 120px;
-    width: 130px;
-    height: 25px;
-}
-
-.obstaculo8 {
-    left: 1510px;
-    bottom: 200px;
-    width: 120px;
-    height: 25px;
-}
-
-
-/* Jefe */
-
-#jefeFinal {
-    position: absolute;
-    left: 1650px;
-    bottom: 45px;
-    width: 120px;
-    height: 170px;
-    background: #251016;
-    border: 3px solid #ff3030;
-    border-radius: 15px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 12;
+    will-change: transform;
+}
+
+.bicho svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.cuerpoBicho { fill: var(--bicho); stroke: rgba(0, 0, 0, 0.55); stroke-width: 1.5; }
+.pupila { transform: translateX(-2.5px); transition: transform 0.15s; }
+.der .pupila { transform: translateX(2.5px); }
+.pata { transform-box: fill-box; transform-origin: 50% 0; animation: pata 0.28s ease-in-out infinite alternate; }
+.pata:nth-child(even) { animation-direction: alternate-reverse; }
+@keyframes pata { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+
+/* Jefe: monstruo con ojos brillantes, colmillos y estados de ataque */
+.esJefe svg {
+    position: absolute;
+    left: -10%;
+    bottom: 0;
+    width: 120%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 7px rgba(0, 0, 0, 0.9));
+}
+
+.esJefe.der svg { transform: scaleX(-1); }
+.cuerpoJefe { transform-origin: 60px 138px; animation: respiraJefe 1.4s ease-in-out infinite; }
+.ojoJefe { fill: var(--acento); filter: drop-shadow(0 0 4px var(--acento)); }
+.brazoJefe { transform-origin: 36px 62px; }
+.brazoJefe, .mandibula { transition: transform 0.15s; }
+
+.esJefe[data-estado="aviso"] .cuerpoJefe { animation: temblorJefe 0.08s linear infinite; }
+.esJefe[data-estado="aviso"] .brazoJefe { transform: rotate(-40deg); }
+.esJefe[data-estado="aviso"] .mandibula,
+.esJefe[data-estado="embestida"] .mandibula { transform: translateY(7px); }
+.esJefe[data-estado="aviso"] .ojoJefe,
+.esJefe.furia .ojoJefe { filter: brightness(1.8) drop-shadow(0 0 8px var(--acento)); }
+.esJefe[data-estado="embestida"] .cuerpoJefe { animation: none; transform: rotate(-9deg); }
+.esJefe.furia svg { filter: drop-shadow(0 0 12px var(--acento)); }
+.esJefe.muere svg { animation: muerte 1s forwards; }
+
+@keyframes respiraJefe { 50% { transform: scaleY(1.03); } }
+@keyframes temblorJefe { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes muerte { 0% { filter: brightness(3); } 100% { filter: brightness(0); opacity: 0; } }
+
+.barraJefe {
+    position: absolute;
+    top: -16px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #300;
+    border: 1px solid #000;
+}
+
+.barraJefe i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: #ff3030;
+    transition: width 0.15s;
+}
+
+.golpeado {
+    filter: brightness(2.5);
+}
+
+.disparo {
+    position: absolute;
+    left: 0;
+    bottom: 45px;
+    background: #5be7ff;
+    border-radius: 3px;
+    box-shadow: 0 0 8px #5be7ff;
+    z-index: 25;
+}
+
+.enemigoDisparo {
+    background: radial-gradient(circle, #fff, var(--acento));
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--acento);
+}
+
+.tutorial {
+    flex-wrap: wrap;
+}
+
+
+/* Pantalla de continuar, ayuda y temblor */
+
+#ayuda {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #8a8f99;
+    z-index: 50;
+    pointer-events: none;
+}
+
+#pantallaContinuar {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 9, 12, 0.88);
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    z-index: 10;
+    gap: 16px;
+    z-index: 70;
+    text-align: center;
 }
 
-.jefeCabeza {
-    font-size: 60px;
-}
+#pantallaContinuar h2 { font-size: 34px; color: var(--acento); text-shadow: 0 0 20px var(--acento); }
+#pantallaContinuar p { color: #c8ccd4; font-size: 14px; }
 
-#jefeFinal p {
-    color: #ff3030;
+#btnContinuar {
+    padding: 14px 32px;
+    background: var(--acento);
+    color: white;
+    border: none;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#btnContinuar:hover { filter: brightness(1.15); }
+
+.tiembla { animation: tiembla 0.35s; }
+@keyframes tiembla {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -2px); }
+    60% { transform: translate(-3px, -2px); }
+    80% { transform: translate(3px, 2px); }
+}
+
+
+/* Kai (personaje) */
+
+#jugador {
+    position: absolute;
+    left: 0;
+    bottom: 45px;
+    width: 28px;
+    height: 68px;
+    z-index: 30;
+    will-change: transform;
+}
+
+#jugador svg {
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 44px;
+    height: 68px;
+    overflow: visible;
+}
+
+#jugador.mirandoIzq svg {
+    transform: scaleX(-1);
+}
+
+#jugador.herido svg {
+    animation: parpadeo 0.2s steps(2) infinite;
+}
+
+#jugador g {
+    transition: transform 0.1s;
+}
+
+.kPiernaI { transform-origin: 18px 47px; }
+.kPiernaD { transform-origin: 26px 47px; }
+.kBrazoT { transform-origin: 20px 30px; }
+.kBrazoD { transform-origin: 24px 31px; }
+.kBufanda { transform-origin: 13px 27px; animation: onda 0.6s ease-in-out infinite alternate; }
+.kCabeza { transform-origin: 22px 24px; animation: respira 2.4s ease-in-out infinite; }
+
+.corriendo .kPiernaI { animation: paso1 0.42s linear infinite; }
+.corriendo .kPiernaD { animation: paso2 0.42s linear infinite; }
+.corriendo .kBrazoT { animation: paso2 0.42s linear infinite; }
+.corriendo .kCabeza { animation: rebote 0.21s ease-in-out infinite; }
+.corriendo .kBufanda { animation-duration: 0.25s; }
+
+.aire .kPiernaI { transform: rotate(-40deg); }
+.aire .kPiernaD { transform: rotate(25deg); }
+.aire .kBrazoT { transform: rotate(-150deg); }
+
+.disparando .kBrazoD { animation: retroceso 0.12s; }
+
+@keyframes paso1 { 0%, 100% { transform: rotate(-32deg); } 50% { transform: rotate(32deg); } }
+@keyframes paso2 { 0%, 100% { transform: rotate(32deg); } 50% { transform: rotate(-32deg); } }
+@keyframes rebote { 50% { transform: translateY(-1.5px); } }
+@keyframes respira { 50% { transform: translateY(1px); } }
+@keyframes onda { from { transform: rotate(-6deg); } to { transform: rotate(10deg); } }
+@keyframes retroceso { 50% { transform: rotate(-12deg) translateX(-2px); } }
+@keyframes parpadeo { 50% { opacity: 0.25; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .kBufanda, .kCabeza, .item { animation: none; }
 }
 
 

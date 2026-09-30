@@ -35,8 +35,7 @@
         <h1>NEXORIA</h1>
 
         <p class="descripcion">
-            Recolectá munición, enfrentá enemigos
-            y derrotá a los jefes finales.
+           Salva la tierra de Nexoria de las fuerzas enemigas.
         </p>
 
         <button id="btnJugar">▶ JUGAR AHORA</button>
@@ -60,117 +59,87 @@
     </div>
 
 
-    <!-- Zona del juego -->
+        <!-- Zona del juego -->
 
     <div id="zonaJuego">
 
+        <!-- Fondo con parallax (se mueve a distinta velocidad que el mapa) -->
+        <div class="capa capaEstrellas"></div>
+        <div class="capa capaMontanas"></div>
+        <div class="capa capaCiudad"></div>
+
         <!-- HUD -->
-
         <div id="hud">
-            <span>
-                ❤️ VIDA:
-                <b id="vida">3</b>
-            </span>
-
-            <span>
-                🔫 BALAS:
-                <b id="balas">0</b>
-            </span>
-
-            <span>
-                ⭐ PUNTOS:
-                <b id="puntos">0</b>
-            </span>
+            <span>🗺️ ZONA: <b id="zona">1</b></span>
+            <span>❤️ VIDA: <b id="vida">3</b></span>
+            <span>🔫 BALAS: <b id="balas">0</b></span>
+            <span>⭐ PUNTOS: <b id="puntos">0</b></span>
         </div>
 
+        <div id="aviso"></div>
+        <div id="ayuda">A / D mover · W saltar · J o clic para disparar</div>
 
-        <!-- Mapa -->
+        <!-- Aparece al derrotar al jefe -->
+        <div id="pantallaContinuar">
+            <h2 id="continuarTitulo">ZONA COMPLETADA</h2>
+            <p id="continuarTexto"></p>
+            <button id="btnContinuar">CONTINUAR ▶</button>
+        </div>
 
+        <!-- Mapa: bloques, plataformas, items y enemigos los crea script.js según el nivel -->
         <div id="mapa">
 
-            <!-- Personaje -->
-
+            <!-- Kai -->
             <div id="jugador">
-
-                <!-- Cabeza -->
-
-                <div class="cabeza">
-                    <div class="pelo"></div>
-                    <div class="ojo ojo1"></div>
-                    <div class="ojo ojo2"></div>
-                    <div class="boca"></div>
-                </div>
-
-                <!-- Cuerpo -->
-
-                <div class="cuerpo">
-                    <div class="campera"></div>
-                    <div class="cinturon"></div>
-                </div>
-
-                <!-- Brazos -->
-
-                <div class="brazo brazoIzquierdo"></div>
-
-                <div class="brazo brazoDerecho">
-                    <div class="arma"></div>
-                </div>
-
-                <!-- Piernas -->
-
-                <div class="pierna izquierda"></div>
-                <div class="pierna derecha"></div>
-
+                <svg viewBox="0 0 44 68" xmlns="http://www.w3.org/2000/svg">
+                    <g class="kBrazoT">
+                        <rect x="17" y="29" width="7" height="18" rx="3.5" fill="#a81f1f"/>
+                        <circle cx="20.5" cy="47" r="3.2" fill="#f0c29b"/>
+                    </g>
+                    <g class="kPiernaI">
+                        <rect x="14" y="46" width="8" height="17" rx="3" fill="#252b38"/>
+                        <rect x="12" y="60" width="12" height="7" rx="3" fill="#14171d"/>
+                    </g>
+                    <g class="kPiernaD">
+                        <rect x="22" y="46" width="8" height="17" rx="3" fill="#333c4e"/>
+                        <rect x="21" y="60" width="13" height="7" rx="3" fill="#14171d"/>
+                    </g>
+                    <rect x="5" y="27" width="11" height="18" rx="3" fill="#7a5230"/>
+                    <rect x="6.5" y="32" width="8" height="4" fill="#5a3c22"/>
+                    <rect x="12" y="25" width="20" height="24" rx="6" fill="#ff3030"/>
+                    <path d="M22 28v14" stroke="#b81f1f" stroke-width="1.5"/>
+                    <rect x="12" y="43" width="20" height="4" fill="#17191f"/>
+                    <rect x="20" y="42.5" width="5" height="5" rx="1" fill="#f5c542"/>
+                    <path class="kBufanda" d="M13 24 L1 27 L5 30 L0 35 L13 30 Z" fill="#e0a92c"/>
+                    <rect x="11" y="23" width="22" height="6" rx="3" fill="#f5c542"/>
+                    <g class="kCabeza">
+                        <circle cx="23" cy="14" r="10.5" fill="#f0c29b" stroke="#b87955" stroke-width="1.2"/>
+                        <path d="M12 13c0-8 6-11 11-11s11 3 11 11c-3-3-7-4-11-4s-8 1-11 4z" fill="#17191f"/>
+                        <rect x="12" y="7" width="22" height="3.5" fill="#2b2f38"/>
+                        <circle cx="27" cy="8.7" r="3.6" fill="#5be7ff" stroke="#f5c542" stroke-width="1.5"/>
+                        <circle cx="23.5" cy="15" r="1.5" fill="#111"/>
+                        <circle cx="29.5" cy="15" r="1.5" fill="#111"/>
+                        <path d="M25 19.5q3 2 6 0" stroke="#9b4c4c" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                    </g>
+                    <g class="kBrazoD">
+                        <rect x="21" y="29" width="7" height="17" rx="3.5" fill="#ff3030" stroke="#b81f1f"/>
+                        <circle cx="26" cy="46" r="3.2" fill="#f0c29b"/>
+                        <rect x="24" y="42" width="17" height="7" rx="2" fill="#20242b"/>
+                        <rect x="26" y="48" width="4" height="4" fill="#20242b"/>
+                        <rect x="38" y="43.5" width="5" height="4" fill="#5be7ff"/>
+                    </g>
+                </svg>
             </div>
-
-
-            <!-- Balas -->
-
-            <div class="bala-recolectable bala1">🔫</div>
-            <div class="bala-recolectable bala2">🔫</div>
-            <div class="bala-recolectable bala3">🔫</div>
-            <div class="bala-recolectable bala4">🔫</div>
-            <div class="bala-recolectable bala5">🔫</div>
-            <div class="bala-recolectable bala6">🔫</div>
-            <div class="bala-recolectable bala7">🔫</div>
-
-
-            <!-- Obstáculos -->
-
-            <div class="obstaculo obstaculo1"></div>
-            <div class="obstaculo obstaculo2"></div>
-            <div class="obstaculo obstaculo3"></div>
-            <div class="obstaculo obstaculo4"></div>
-
-            <!-- Plataformas -->
-
-            <div class="obstaculo obstaculo5"></div>
-            <div class="obstaculo obstaculo6"></div>
-            <div class="obstaculo obstaculo7"></div>
-            <div class="obstaculo obstaculo8"></div>
-
-
-            <!-- Jefe -->
-
-            <div id="jefeFinal">
-                <div class="jefeCabeza">👹</div>
-                <p>JEFE FINAL</p>
-            </div>
-
-
-            <!-- Suelo -->
-
-            <div id="suelo"></div>
 
         </div>
     </div>
 
 
-    <!-- Game Over -->
+<!-- Game Over -->
 
     <div id="pantallaGameOver">
-        <h2>GAME OVER</h2>
-        <p>Has sido derrotado.</p>
+        <h2 id="gameOverTitulo">GAME OVER</h2>
+        <p id="gameOverTexto">Has sido derrotado.</p>
 
         <button id="btnReintentar">REINTENTAR</button>
         <button id="btnInicio">VOLVER AL INICIO</button>
@@ -190,7 +159,7 @@
     <p>
         Nexoria cayó en el caos después de que una misteriosa
         fuerza atacara el planeta. Ahora sus habitantes deben
-        recuperar las zonas perdidas y enfrentarse a poderosos
+        recuperar las zonas que fueron tomadas por las bestias y enfrentarse a poderosos
         enemigos.
     </p>
 
@@ -203,37 +172,37 @@
 
     <p class="miniTitulo">ENEMIGOS</p>
 
-    <h2>Jefes finales</h2>
+    <h2>MOUNSTROS</h2>
 
     <div class="jefes">
 
         <div class="jefe">
             <div class="icono">👹</div>
 
-            <h3>EL GUARDIÁN</h3>
+            <h3>GUARDIÁN</h3>
 
             <p>
-                Protege las primeras zonas de Nexoria.
+                Protege la primera zona de Nexoria. Fue mandado por el jefe de la tribu invasora para debilitar a los intentos de heroes
             </p>
         </div>
 
         <div class="jefe">
             <div class="icono">👾</div>
 
-            <h3>EL MUTANTE</h3>
+            <h3>MUTANTE</h3>
 
             <p>
-                Un enemigo rápido y difícil de derrotar.
+                Un enemigo que ha sido modificado genéticamente para ser más fuerte. Nunca han podido derrotarlo.
             </p>
         </div>
 
         <div class="jefe">
             <div class="icono">☠️</div>
 
-            <h3>EL SOBERANO</h3>
+            <h3>??</h3>
 
             <p>
-                El jefe final de Nexoria.
+                Un enemigo que nadie ha visto. Se dice que es el jefe final de la invasión y que es invencible.
             </p>
         </div>
 
@@ -258,7 +227,9 @@
             <h3>MOVETE</h3>
 
             <p>
-                Usá las flechas del teclado.
+                Usá las teclas A y D para moverte por el mapa. 
+                A: para moverte a la izquierda
+                D: para moverte a la derecha.
             </p>
         </div>
 
@@ -268,7 +239,7 @@
             <h3>SALTÁ</h3>
 
             <p>
-                Usá la flecha hacia arriba para saltar obstáculos.
+                Usá la tecla W para saltar obstáculos y platarfomas
             </p>
         </div>
 
@@ -278,7 +249,17 @@
             <h3>RECOLECTÁ</h3>
 
             <p>
-                Encontrá munición durante el nivel.
+                Encuentra la municion esparcida por el mapa para poder disparar a los enemigos. Cada bala es importante.
+            </p>
+        </div>
+
+        <div>
+            <span>💥</span>
+
+            <h3>DISPARÁ</h3>
+
+            <p>
+                Apretá J (o K) para disparar. Derrotá al jefe de cada zona para pasar a la siguiente. También podés moverte con las flechas.
             </p>
         </div>
 
