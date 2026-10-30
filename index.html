@@ -63,10 +63,12 @@
 
     <div id="zonaJuego">
 
-        <!-- Fondo con parallax (se mueve a distinta velocidad que el mapa) -->
-        <div class="capa capaEstrellas"></div>
+        <!-- Fondo con parallax (se mueve a distinta velocidad que el mapa): tormenta tóxica -->
+        <div class="capa capaNubes"></div>
+        <div id="rayo"><svg viewBox="0 0 60 260" preserveAspectRatio="none"><polyline points="34,0 20,78 38,86 14,170 34,178 8,260"/></svg></div>
         <div class="capa capaMontanas"></div>
         <div class="capa capaCiudad"></div>
+        <div id="niebla"></div>
 
         <!-- HUD -->
         <div id="hud">
@@ -77,6 +79,13 @@
         </div>
 
         <div id="aviso"></div>
+
+        <!-- Barra de vida del jefe (la maneja script.js) -->
+        <div id="jefeHUD"><span id="jefeNombre"></span><div class="barra"><i id="jefeVida"></i></div></div>
+
+        <!-- Lluvia ácida y destello de los rayos -->
+        <div id="lluvia"></div>
+        <div id="relampago"></div>
 
         <!-- Nubecita de diálogo de Cocardo (la posiciona script.js sobre su cabeza) -->
         <div id="dialogo"><b>Cocardo</b><span id="dialogoTexto"></span></div>
@@ -182,7 +191,7 @@
     <div class="jefes">
 
         <div class="jefe">
-            <div class="icono">👹</div>
+            <div class="icono bestia guardian"></div>
 
             <h3>GUARDIAN</h3>
 
@@ -192,7 +201,7 @@
         </div>
 
         <div class="jefe">
-            <div class="icono">👾</div>
+            <div class="icono bestia mutante"></div>
 
             <h3>MUTANT</h3>
 
@@ -202,7 +211,7 @@
         </div>
 
         <div class="jefe">
-            <div class="icono">☠️</div>
+            <div class="icono bestia misterio"></div>
 
             <h3>??</h3>
 
@@ -254,7 +263,7 @@
             <h3>COLLECT</h3>
 
             <p>
-                Find the ammo scattered around the map so you can shoot the enemies. Every bullet counts.
+                Find the ammo scattered around the map so you can shoot the enemies. Each pickup gives only 2 bullets, so every shot counts.
             </p>
         </div>
 
@@ -265,6 +274,16 @@
 
             <p>
                 Press J (or K) to shoot. Defeat the boss of each zone to move on to the next one. You can also move with the arrow keys.
+            </p>
+        </div>
+
+        <div>
+            <span>☣️</span>
+
+            <h3>SURVIVE</h3>
+
+            <p>
+                The ground is solid everywhere. Block walls are solid too, so use them as cover from turrets. Green hearts 💚 give back a life.
             </p>
         </div>
 
