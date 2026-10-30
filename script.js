@@ -4,9 +4,11 @@ const pantallaJuego = $("pantallaJuego"), portadaJuego = $("portadaJuego"), zona
 const mapa = $("mapa"), jugador = $("jugador"), aviso = $("aviso"), pantallaGameOver = $("pantallaGameOver");
 const vidaTexto = $("vida"), balasTexto = $("balas"), puntosTexto = $("puntos"), zonaTexto = $("zona");
 const pantallaContinuar = $("pantallaContinuar");
+const jefeHUD = $("jefeHUD"), jefeNombre = $("jefeNombre"), jefeVida = $("jefeVida");
+const relampago = $("relampago"), rayo = $("rayo");
 
 // Capas del fondo: [elemento, velocidad relativa a la cámara, ancho del tile]
-const capas = [[".capaEstrellas", 0.05, 300], [".capaMontanas", 0.2, 800], [".capaCiudad", 0.45, 500]]
+const capas = [[".capaNubes", 0.05, 600], [".capaMontanas", 0.2, 800], [".capaCiudad", 0.45, 500]]
     .map(([sel, factor, tile]) => [document.querySelector(sel), factor, tile]);
 
 // ================= AJUSTES (tocá estos números para cambiar la "sensación") =================
@@ -20,37 +22,78 @@ const SALTO = 12.5;        // fuerza del salto
 const COYOTE = 6;          // frames de gracia para saltar justo después de dejar una plataforma
 const BUFFER = 6;          // frames que se "recuerda" un salto apretado un poco antes de tocar el suelo
 
+// ---- Dificultad y munición ----
+const VIDAS = 3;           // vidas al empezar la partida
+const VIDAS_MAX = 4;       // tope de vidas (los corazones 💚 del mapa suman una)
+const BALAS_ITEM = 2;      // balas que da CADA item de munición del mapa
+const BALAS_ENEMIGO = 1;   // balas que suelta un enemigo común al morir
+const BALAS_INICIO = 4;    // balas al empezar la partida
+const BALAS_ZONA = 6;      // balas de ayuda al entrar a cada zona nueva
+const VIDA_ENEMIGO = 2;    // disparos que aguanta un enemigo común
+
 // ================= NIVELES =================
-// bloques: [x, y, ancho, alto, "p"]  -> y = altura sobre el suelo. Con "p" es plataforma (se atraviesa desde abajo)
-// items:   ["b" = balas | "m" = moneda, x, y]
-// enemigos: [xMin, xMax] recorrido de cada patrullero
+// bloques:  [x, y, ancho, alto, "p"] -> y = altura sobre el suelo. Todos son SÓLIDOS (no se atraviesan).
+//           El "p" solo cambia el aspecto (pasarela flotante de metal).
+// items:    ["b" = balas | "m" = moneda | "v" = corazón, x, y]
+// enemigos: ["b", min, max]      patrullero en el suelo
+//           ["v", min, max, y]   volador que oscila alrededor de la altura y
+//           ["t", x, y]          torreta que dispara apuntando (y = altura de la base)
+// jefe:     sprite (carpeta img/), caja de choque (w, h), escala del dibujo (esc) y su comportamiento
+const SPRITES = {   // [ancho del cuadro, alto del cuadro, cantidad de cuadros]
+    guardian: { andar: [191, 87, 8], ataque: [191, 140, 6] },
+    mutante:  { andar: [188, 89, 8], ataque: [193, 139, 6] },
+    final:    { andar: [191, 110, 8], ataque: [191, 147, 6] }
+};
+
 const NIVELES = [
+    // ---------- ZONA 1: techos y escaleras de la ciudad ----------
     {
-        nombre: "Abandoned City", clase: "zona1", ancho: 1800,
-        bloques: [[200, 0, 80, 60], [430, 0, 100, 100], [700, 0, 100, 70],
-            [900, 105, 140, 25, "p"], [1080, 55, 120, 25, "p"], [1230, 135, 120, 25, "p"], [1380, 75, 130, 25, "p"], [1510, 155, 120, 25, "p"]],
-        items: [["b", 300, 75], ["b", 550, 125], ["b", 800, 75], ["b", 1080, 95], ["b", 1210, 170], ["b", 1370, 115], ["b", 1480, 190],
-            ["m", 240, 65], ["m", 480, 105], ["m", 620, 5], ["m", 740, 75], ["m", 880, 5], ["m", 970, 135], ["m", 1140, 85], ["m", 1290, 165], ["m", 1440, 105]],
-        enemigos: [[300, 390], [545, 660], [830, 1000], [1100, 1450]],
-        jefe: { e: "👹", x: 1650, w: 110, h: 130, vida: 10, min: 1600, max: 1690, vel: 1, cad: 130 }
+        nombre: "Abandoned City", clase: "zona1", ancho: 2500,
+        bloques: [[260, 0, 70, 40], [330, 0, 70, 80], [400, 0, 220, 115],
+            [1000, 0, 70, 60], [1070, 0, 70, 100], [1190, 95, 110, 25, "p"], [1350, 75, 100, 25, "p"],
+            [1640, 0, 60, 45], [1700, 0, 60, 85], [1760, 0, 130, 125],
+            [2120, 85, 100, 25, "p"], [2340, 85, 100, 25, "p"]],
+        items: [["b", 275, 48], ["b", 500, 120], ["b", 580, 120], ["b", 700, 5], ["b", 905, 100], ["b", 1030, 65], ["b", 1210, 125],
+            ["b", 1380, 105], ["b", 1520, 90], ["b", 1720, 90], ["b", 1810, 130], ["b", 2000, 85], ["b", 2150, 115], ["b", 2080, 5], ["b", 2430, 5],
+            ["v", 1100, 105],
+            ["m", 345, 85], ["m", 460, 120], ["m", 540, 120], ["m", 760, 5], ["m", 1150, 5], ["m", 1260, 125], ["m", 1420, 5], ["m", 1660, 50], ["m", 1850, 130], ["m", 2380, 115]],
+        enemigos: [["b", 650, 800], ["b", 1160, 1240], ["b", 1290, 1410], ["v", 640, 820, 85], ["v", 870, 930, 90], ["v", 1475, 1560, 95], ["t", 560, 115]],
+        jefe: { nombre: "GUARDIAN", img: "guardian", x: 2300, w: 130, h: 80, esc: 1.15, vida: 16, min: 2130, max: 2330,
+            vel: 1.4, cad: 105, aviso: 36, ataques: ["embestida", "fuego"], fuego: "recto", vf: 4.4 }
     },
+    // ---------- ZONA 2: pilares y pasarelas de la fábrica ----------
     {
-        nombre: "Energy Factory", clase: "zona2", ancho: 2300,
-        bloques: [[260, 0, 70, 50], [430, 0, 80, 90], [1160, 0, 90, 80], [1880, 0, 100, 60],
-            [610, 50, 110, 25, "p"], [780, 100, 110, 25, "p"], [960, 60, 110, 25, "p"], [1330, 50, 120, 25, "p"], [1500, 105, 120, 25, "p"], [1680, 60, 120, 25, "p"]],
-        items: [["b", 290, 55], ["b", 460, 95], ["b", 650, 80], ["b", 820, 130], ["b", 1000, 90], ["b", 1200, 85], ["b", 1360, 80], ["b", 1540, 135], ["b", 1720, 90],
-            ["m", 180, 5], ["m", 380, 5], ["m", 560, 5], ["m", 900, 5], ["m", 1110, 5], ["m", 1420, 5], ["m", 1600, 5], ["m", 1800, 5], ["m", 1930, 65]],
-        enemigos: [[345, 395], [540, 900], [1270, 1650]],
-        jefe: { e: "👾", x: 2100, w: 110, h: 130, vida: 14, min: 2000, max: 2190, vel: 1.5, cad: 100 }
+        nombre: "Energy Factory", clase: "zona2", ancho: 3000,
+        bloques: [[250, 0, 60, 50], [650, 0, 60, 60], [710, 0, 60, 110], [840, 95, 120, 25, "p"],
+            [1000, 65, 90, 25, "p"], [1230, 0, 70, 90], [1300, 0, 70, 50],
+            [1700, 0, 60, 70], [1760, 0, 60, 110], [1880, 90, 100, 25, "p"], [2000, 60, 90, 25, "p"],
+            [2260, 0, 70, 60], [2330, 0, 70, 105], [2420, 110, 110, 25, "p"], [2570, 75, 100, 25, "p"]],
+        items: [["b", 270, 55], ["b", 730, 115], ["b", 880, 125], ["b", 1030, 95], ["b", 1250, 95], ["b", 1320, 55], ["b", 1480, 5],
+            ["b", 1620, 80], ["b", 1780, 115], ["b", 1910, 120], ["b", 2030, 90], ["b", 2150, 5], ["b", 2350, 110], ["b", 2450, 140], ["b", 2600, 105],
+            ["b", 1170, 5], ["b", 2270, 65], ["b", 2740, 5], ["b", 2830, 5],
+            ["v", 800, 5], ["v", 2220, 5],
+            ["m", 200, 5], ["m", 350, 5], ["m", 680, 65], ["m", 900, 125], ["m", 1180, 40], ["m", 1500, 5], ["m", 1850, 5], ["m", 2290, 65], ["m", 2900, 5]],
+        enemigos: [["b", 555, 610], ["b", 1145, 1190], ["b", 1400, 1540], ["b", 1830, 1990], ["v", 545, 640, 100], ["v", 1380, 1550, 85],
+            ["v", 1830, 2040, 150], ["v", 2210, 2380, 150], ["t", 1236, 90], ["t", 1780, 110], ["t", 2360, 105]],
+        jefe: { nombre: "MUTANT", img: "mutante", x: 2780, w: 140, h: 85, esc: 1.15, vida: 22, min: 2700, max: 2860,
+            vel: 1.8, cad: 85, aviso: 32, ataques: ["embestida", "fuego", "salto"], fuego: "apuntado", vf: 4.2, n: 3, onda: true }
     },
+    // ---------- ZONA 3: el reactor, islas sobre ácido y una pirámide ----------
     {
-        nombre: "Nexoria's Core", clase: "zona3", ancho: 2600,
-        bloques: [[280, 0, 80, 60], [520, 0, 90, 100], [1020, 0, 90, 90], [1560, 0, 90, 70], [2140, 0, 80, 70],
-            [700, 55, 110, 25, "p"], [860, 105, 110, 25, "p"], [1180, 55, 110, 25, "p"], [1330, 105, 110, 25, "p"], [1700, 55, 110, 25, "p"], [1850, 105, 110, 25, "p"], [2000, 55, 100, 25, "p"]],
-        items: [["b", 310, 65], ["b", 550, 105], ["b", 730, 80], ["b", 890, 130], ["b", 1050, 95], ["b", 1210, 80], ["b", 1360, 130], ["b", 1590, 75], ["b", 1730, 80], ["b", 1880, 130],
-            ["m", 200, 5], ["m", 430, 5], ["m", 660, 5], ["m", 950, 5], ["m", 1140, 5], ["m", 1480, 5], ["m", 1660, 5], ["m", 2030, 80], ["m", 2170, 75]],
-        enemigos: [[380, 480], [630, 980], [1120, 1520], [1660, 2100]],
-        jefe: { e: "☠️", x: 2380, w: 120, h: 150, vida: 20, min: 2260, max: 2480, vel: 2, cad: 75 }
+        nombre: "Nexoria's Core", clase: "zona3", ancho: 3300,
+        bloques: [[470, 0, 60, 55], [540, 0, 60, 90], [900, 0, 80, 70],
+            [1250, 0, 70, 50], [1320, 0, 70, 90], [1390, 0, 70, 130], [1460, 0, 70, 130], [1530, 0, 70, 90], [1600, 0, 70, 50],
+            [1760, 70, 90, 25, "p"], [1990, 70, 90, 25, "p"], [2400, 0, 70, 55], [2470, 0, 70, 90],
+            [2600, 100, 100, 25, "p"], [2850, 100, 100, 25, "p"]],
+        items: [["b", 490, 60], ["b", 560, 95], ["b", 920, 75], ["b", 1270, 55], ["b", 1340, 95], ["b", 1480, 135], ["b", 1550, 95], ["b", 1620, 55],
+            ["b", 1780, 100], ["b", 2010, 100], ["b", 2420, 60], ["b", 2490, 95], ["b", 2620, 130], ["b", 2870, 130], ["b", 380, 90], ["b", 2300, 95],
+            ["b", 2980, 5], ["b", 3200, 5], ["b", 1050, 5], ["b", 2560, 5], ["b", 150, 5],
+            ["v", 1430, 135], ["v", 2150, 5],
+            ["m", 200, 5], ["m", 420, 5], ["m", 780, 5], ["m", 1000, 5], ["m", 1180, 5], ["m", 1700, 5], ["m", 1880, 5], ["m", 2120, 5], ["m", 2370, 5], ["m", 2700, 5]],
+        enemigos: [["b", 150, 270], ["b", 610, 665], ["b", 985, 1060], ["b", 1680, 1860], ["b", 2030, 2200], ["b", 2550, 2700],
+            ["v", 340, 700, 130], ["v", 1260, 1660, 195], ["v", 1900, 2260, 140], ["t", 1425, 130], ["t", 2505, 90], ["t", 940, 70]],
+        jefe: { nombre: "???", img: "final", x: 3050, w: 140, h: 100, esc: 1.15, vida: 30, min: 2950, max: 3130,
+            vel: 2.2, cad: 65, aviso: 28, ataques: ["embestida", "fuego", "salto"], fuego: "apuntado", vf: 4.8, n: 5, onda: true }
     }
 ];
 
@@ -58,7 +101,7 @@ const NIVELES = [
 let p, nivel, nivelActual, bloques, items, enemigos, disparos, camX, vistaAncho;
 let vida, balas, puntos;
 let teclas = {}, juegoActivo = false, enTransicion = false;
-let raf, ultimoTiempo, tTransicion, tAviso;
+let raf, ultimoTiempo, tTransicion, tAviso, tRayo;
 
 // ================= DIÁLOGOS DE COCARDO (nubecitas de diálogo) =================
 const NOMBRE_HEROE = "Cocardo";
@@ -111,6 +154,7 @@ const DIALOGOS = {
     pocaVida: "I can't take much more of this... Careful now.",
     enemigoDerrotado: "One less beast in Nexoria.",
     salto: "Here goes nothing!",
+    corazon: "A little strength back. Let's keep going.",
     derrota: ["No... I can't fall here... Nexoria is counting on me...",
               "I'll be back. And next time, I won't lose."]
 };
@@ -235,10 +279,11 @@ document.addEventListener("keyup", function (e) {
 window.addEventListener("blur", () => { teclas = {}; });
 window.addEventListener("resize", () => { vistaAncho = zonaJuego.clientWidth || vistaAncho; });
 
+
 // ================= PARTIDA Y NIVELES =================
 function iniciarPartida() {
     detener();
-    vida = 3; balas = 0; puntos = 0;
+    vida = VIDAS; balas = BALAS_INICIO; puntos = 0;
     dialogoPendiente = [];
     Object.keys(ultimaVez).forEach(k => delete ultimaVez[k]);
     p = { w: 28, h: 68, dir: 1, coyote: 0, buffer: 0, cd: 0, flash: 0 };
@@ -253,22 +298,24 @@ function cargarNivel(i) {
     mapa.style.width = nivel.ancho + "px";
     zonaJuego.className = nivel.clase;
     zonaTexto.textContent = i + 1;
+    jefeHUD.classList.remove("visible");
 
+    // Suelo firme en todo el ancho del nivel
     crear("suelo", 0, -SUELO, nivel.ancho, SUELO);
+
     bloques = nivel.bloques.map(([x, y, w, h, t]) => {
         crear(t ? "plataforma" : "bloque", x, y, w, h);
-        return { x, y, w, h, unaVia: !!t };
+        return { x, y, w, h };
     });
+    const ICONO = { b: "🔫", m: "🪙", v: "💚" };
     items = nivel.items.map(([t, x, y]) => ({
-        t, x, y, w: 24, h: 24, el: crear("item", x, y, 24, 24, t === "b" ? "🔫" : "🪙")
+        t, x, y, w: 24, h: 24, el: crear("item", x, y, 24, 24, ICONO[t])
     }));
-    enemigos = nivel.enemigos.map(([min, max]) =>
-        nuevoEnemigo({ e: "🤖", x: min, w: 34, h: 34, vida: 2, min, max, vel: 1.1, pts: 20 }));
-    enemigos.push(nuevoEnemigo({ ...nivel.jefe, jefe: true, pts: 200 }));
+    crearEnemigos();
     disparos = [];
 
     Object.assign(p, { x: 70, y: 0, vx: 0, vy: 0, suelo: true, invul: 0, golpe: 0 });
-    if (i > 0) balas += 10;   // ayuda al empezar cada zona nueva
+    if (i > 0) balas += BALAS_ZONA;   // ayuda al empezar cada zona nueva
     vistaAncho = zonaJuego.clientWidth;
     camX = 0;
     enTransicion = false;
@@ -294,6 +341,7 @@ function crear(clase, x, y, w, h, texto) {
     return el;
 }
 
+// ================= ENEMIGOS: dibujos =================
 // Bicho de un solo ojo (el ojo sigue al jugador)
 const BICHO = `<svg viewBox="0 0 34 34">
 <g fill="none" stroke="#1b1f14" stroke-width="2.2" stroke-linecap="round"><path class="pata" d="M8 24L3 32"/><path class="pata" d="M13 26L11 33"/><path class="pata" d="M21 26L23 33"/><path class="pata" d="M26 24L31 32"/></g>
@@ -305,27 +353,79 @@ const BICHO = `<svg viewBox="0 0 34 34">
 <path d="M8 25L11 22 14 25 17 22 20 25 23 22 26 25" stroke="#111" stroke-width="1.4" fill="none" stroke-linejoin="round"/>
 </svg>`;
 
-// Jefe: demonio con cuernos, tres ojos, colmillos y garras
-const JEFE = `<svg viewBox="0 0 120 140" preserveAspectRatio="xMidYMax meet"><g class="cuerpoJefe">
-<path d="M96 40L114 18 106 54ZM100 64L120 52 108 80ZM96 88L118 86 104 106Z" fill="#2e1522"/>
-<path d="M40 98L32 138H58L62 104ZM72 98L76 138H100L92 96Z" fill="#160b12"/>
-<path d="M32 138H20L32 128ZM76 138H64L76 128Z" fill="#e8dcc0"/>
-<path d="M30 60Q22 100 44 114H90Q112 96 102 56Q90 34 60 36Q38 38 30 60Z" fill="#241019"/>
-<path d="M44 70Q62 76 84 68M46 84Q64 90 88 82M50 98Q66 102 88 96" stroke="#5a2236" stroke-width="2.5" fill="none"/>
-<g class="brazoJefe"><path d="M34 60L6 84 14 94 40 80Z" fill="#2c1420"/><path d="M6 84L-4 98 8 92 6 104 16 94ZM14 94L8 108 20 98Z" fill="#e8dcc0"/></g>
-<path d="M22 26Q22 6 52 6Q82 6 84 28Q84 46 60 50Q28 52 22 26Z" fill="#3a1723"/>
-<path d="M30 14Q16 4 14 -8Q28 -6 40 8ZM74 10Q88 2 94 -10Q80 -8 68 6Z" fill="#e8dcc0"/>
-<path d="M24 20L48 28 46 20 30 12ZM82 24L62 26 64 18 78 12Z" fill="#12070c"/>
-<ellipse class="ojoJefe" cx="38" cy="30" rx="7.5" ry="5"/><ellipse class="ojoJefe" cx="65" cy="29" rx="6.5" ry="4.5"/><circle class="ojoJefe" cx="52" cy="15" r="3"/>
-<path d="M37 24v12M64 24.5v10" stroke="#000" stroke-width="2.4"/>
-<g class="mandibula"><ellipse cx="54" cy="44" rx="24" ry="9" fill="#0b0508"/><path d="M34 42L38 52 42 43ZM46 44L50 55 54 45ZM58 45L62 54 66 44ZM70 42L74 50 77 40Z" fill="#f4ecd8"/></g>
-<path d="M32 40L36 50 40 41ZM48 42L52 52 56 43ZM64 42L68 50 72 41Z" fill="#f4ecd8"/>
-</g></svg>`;
+// Volador tóxico: esfera con alas que oscila en el aire
+const VOLADOR = `<svg viewBox="0 0 34 30">
+<g class="ala alaI"><ellipse cx="8" cy="9" rx="8.5" ry="4" fill="rgba(210,255,190,.6)" stroke="#1b1f14" stroke-width="1"/></g>
+<g class="ala alaD"><ellipse cx="26" cy="9" rx="8.5" ry="4" fill="rgba(210,255,190,.6)" stroke="#1b1f14" stroke-width="1"/></g>
+<path d="M11 25l-3 4M17 26v4M23 25l3 4" stroke="#111" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+<ellipse class="cuerpoBicho" cx="17" cy="17" rx="11" ry="9.5"/>
+<circle cx="17" cy="16" r="5.2" fill="#fff" stroke="#111" stroke-width="1.1"/>
+<g class="pupila"><circle cx="17" cy="16" r="3" fill="#c01515"/><circle cx="17" cy="16" r="1.3" fill="#000"/></g>
+</svg>`;
+
+// Torreta: cañón fijo que apunta al jugador
+const TORRETA = `<svg viewBox="0 0 34 34">
+<rect x="4" y="22" width="26" height="12" rx="2" fill="#2a302b" stroke="#000" stroke-opacity=".55" stroke-width="1.2"/>
+<rect x="7" y="23" width="20" height="3" fill="#4d5a50"/>
+<rect x="21" y="14" width="13" height="7" rx="2" fill="#15181a" stroke="#000" stroke-width="1"/>
+<rect x="8" y="10" width="17" height="14" rx="5" class="cuerpoTorreta"/>
+<circle class="ojoTorreta" cx="17" cy="17" r="3.8"/>
+</svg>`;
+
+function crearEnemigos() {
+    enemigos = nivel.enemigos.map(([t, a, b, c]) => {
+        if (t === "v") return nuevoEnemigo({ tipo: "volador", x: a, min: a, max: b, y: c, y0: c, w: 34, h: 30, vida: VIDA_ENEMIGO, vel: 1.5, amp: 32, fase: Math.random() * 6, pts: 30 });
+        if (t === "t") return nuevoEnemigo({ tipo: "torreta", x: a, y: b, w: 34, h: 34, vida: 3, cad: 120, pts: 30 });
+        return nuevoEnemigo({ tipo: "bicho", x: a, min: a, max: b, w: 34, h: 34, vida: VIDA_ENEMIGO, vel: 1.6, pts: 20 });
+    });
+    enemigos.push(nuevoJefe(nivel.jefe));
+}
 
 function nuevoEnemigo(d) {
-    const el = crear("enemigo" + (d.jefe ? " esJefe" : " bicho"), 0, 0, d.w, d.h);
-    el.innerHTML = d.jefe ? JEFE + '<div class="barraJefe"><i></i></div>' : BICHO;
-    return { ...d, y: 0, dir: 1, vidaMax: d.vida, estado: "activo", t: d.cad || 0, el, barra: el.querySelector("i") };
+    const el = crear("enemigo " + d.tipo, 0, 0, d.w, d.h);
+    el.innerHTML = d.tipo === "torreta" ? TORRETA : d.tipo === "volador" ? VOLADOR : BICHO;
+    return { y: 0, dir: 1, t: d.cad || 0, ...d, vidaMax: d.vida, el };
+}
+
+// Jefe: usa las hojas de sprites de img/ (una tira para andar y otra para atacar)
+function nuevoJefe(d) {
+    const S = SPRITES[d.img];
+    const el = crear("enemigo esJefe", 0, 0, d.w, d.h);
+    el.innerHTML = '<div class="cuerpoJefe"><div class="sprite sAndar"></div><div class="sprite sAtaque"></div></div>';
+    const e = {
+        ...d, jefe: true, tipo: "jefe", y: 0, vy: 0, dir: 1, mira: -1, estado: "activo", t: d.cad, vidaMax: d.vida,
+        el, anim: 0, pose: 0, poseT: 0, avisoMax: d.aviso, sprite: S, tira: "", cuadro: -1, ultimoAtaque: "", pts: 200,
+        divs: { andar: el.querySelector(".sAndar"), ataque: el.querySelector(".sAtaque") }
+    };
+    for (const k of ["andar", "ataque"]) {
+        const [w, h, n] = S[k], div = e.divs[k];
+        div.style.width = Math.round(w * d.esc) + "px";
+        div.style.height = Math.round(h * d.esc) + "px";
+        div.style.backgroundImage = `url(img/${d.img}_${k}.png)`;
+        div.style.backgroundSize = `${Math.round(w * n * d.esc)}px ${Math.round(h * d.esc)}px`;
+    }
+    return e;
+}
+
+// Elige la tira (andar / ataque) y el cuadro según lo que está haciendo el jefe
+function animarJefe(e) {
+    let tira = "andar", f;
+    if (e.poseT > 0) { tira = "ataque"; f = e.pose; }
+    else if (e.estado === "aviso") { tira = "ataque"; f = e.t > e.avisoMax * 0.5 ? 1 : 2; }
+    else if (e.estado === "embestida") { tira = "ataque"; f = 3 + Math.floor(e.anim) % 3; }
+    else if (e.estado === "salto") { tira = "ataque"; f = e.vy > 0 ? 4 : 5; }
+    else f = Math.floor(e.anim) % 8;
+
+    e.el.classList.toggle("izq", e.mira < 0);
+    if (tira !== e.tira) {
+        e.divs.andar.style.display = tira === "andar" ? "block" : "none";
+        e.divs.ataque.style.display = tira === "ataque" ? "block" : "none";
+        e.tira = tira; e.cuadro = -1;
+    }
+    if (f !== e.cuadro) {
+        e.divs[tira].style.backgroundPositionX = -Math.round(f * e.sprite[tira][0] * e.esc) + "px";
+        e.cuadro = f;
+    }
 }
 
 function completarZona() {
@@ -344,6 +444,7 @@ function completarZona() {
 function mostrarContinuar() {
     const esUltima = nivelActual === NIVELES.length - 1;
     ocultarDialogo();
+    jefeHUD.classList.remove("visible");
     $("continuarTitulo").textContent = esUltima ? "NEXORIA IS SAFE!" : `ZONE ${nivelActual + 1} COMPLETE`;
     $("continuarTexto").textContent = `Score: ${puntos} · Ammo: ${balas}` +
         (esUltima ? "" : ` · Next zone: ${NIVELES[nivelActual + 1].nombre}`);
@@ -353,6 +454,7 @@ function mostrarContinuar() {
     $("btnContinuar").focus();
     juegoActivo = false;
     cancelAnimationFrame(raf);
+    clearTimeout(tRayo);
     teclas = {};
 }
 
@@ -386,6 +488,7 @@ function arrancar() {
     juegoActivo = true;
     ultimoTiempo = performance.now();
     raf = requestAnimationFrame(bucle);
+    programarRayo();
 }
 
 function detener() {
@@ -393,7 +496,9 @@ function detener() {
     cancelAnimationFrame(raf);
     clearTimeout(tTransicion);
     clearTimeout(tAviso);
+    clearTimeout(tRayo);
     aviso.classList.remove("visible");
+    jefeHUD.classList.remove("visible");
     ocultarDialogo();
     teclas = {};
     pantallaContinuar.style.display = "none";
@@ -411,6 +516,10 @@ function actualizar(dt) {
     for (const e of enemigos) {
         if (e.jefe && !e.visto && Math.abs(p.x - e.x) < 450) {
             e.visto = true;
+            jefeNombre.textContent = e.nombre;
+            jefeVida.style.width = "100%";
+            jefeVida.classList.remove("furia");
+            jefeHUD.classList.add("visible");
             decir(DIALOGOS.jefeAparece[nivelActual], 3);
         }
     }
@@ -422,6 +531,7 @@ function actualizar(dt) {
 }
 
 // ================= JUGADOR =================
+
 function moverJugador(dt) {
     p.golpe -= dt; p.invul -= dt; p.cd -= dt; p.flash -= dt; p.buffer -= dt;
 
@@ -443,16 +553,16 @@ function moverJugador(dt) {
         if (Math.random() < 0.25 && listo("salto", 30000)) decir(DIALOGOS.salto, 1);
     }
 
-    // Eje X: se mueve y se resuelve contra bloques sólidos
+    // Eje X: se mueve y se resuelve contra los bloques (todos sólidos)
     p.x += p.vx * dt;
     for (const b of bloques) {
-        if (b.unaVia || !solapa(p, b)) continue;
-        p.x = p.vx > 0 ? b.x - p.w : b.x + b.w;
+        if (!solapa(p, b)) continue;
+        p.x = p.x + p.w / 2 < b.x + b.w / 2 ? b.x - p.w : b.x + b.w;
         p.vx = 0;
     }
     p.x = Math.max(0, Math.min(nivel.ancho - p.w, p.x));
 
-    // Eje Y: gravedad y aterrizaje
+    // Eje Y: gravedad, aterrizaje y golpes de cabeza (los bloques no se atraviesan desde ningún lado)
     const yAntes = p.y;
     p.vy = Math.max(p.vy - GRAV * dt, -14);
     p.y += p.vy * dt;
@@ -461,10 +571,11 @@ function moverJugador(dt) {
         if (!solapa(p, b)) continue;
         if (p.vy <= 0 && yAntes >= b.y + b.h - 0.01) {          // cae encima
             p.y = b.y + b.h; p.vy = 0; p.suelo = true;
-        } else if (!b.unaVia && p.vy > 0) {                     // se golpea la cabeza
+        } else if (p.vy > 0) {                                  // se golpea la cabeza
             p.y = b.y - p.h; p.vy = 0;
         }
     }
+    // Suelo firme en todo el mapa: si Cocardo baja hasta la altura del suelo, aterriza
     if (p.y <= 0) { p.y = 0; p.vy = 0; p.suelo = true; }
 
     // Disparo (mantener apretado = ráfaga)
@@ -488,49 +599,114 @@ function danar(lado) {
 }
 
 // ================= ENEMIGOS Y DISPAROS =================
+const limitar = (v, a, b) => Math.max(a, Math.min(b, v));
+
 function moverEnemigos(dt) {
     for (const e of enemigos) {
-        e.el.classList.toggle("der", p.x > e.x);   // miran hacia el jugador
         if (e.jefe) { moverJefe(e, dt); continue; }
+        e.el.classList.toggle("der", p.x > e.x);   // miran hacia el jugador
+        if (e.tipo === "torreta") { moverTorreta(e, dt); continue; }
         e.x += e.dir * e.vel * dt;
         if (e.x <= e.min) { e.x = e.min; e.dir = 1; }
         else if (e.x >= e.max) { e.x = e.max; e.dir = -1; }
+        if (e.tipo === "volador") { e.fase += 0.05 * dt; e.y = e.y0 + Math.sin(e.fase) * e.amp; }
     }
 }
 
-// Jefe: persigue -> avisa (tiembla y abre la boca) -> ataca con embestida o bolas de fuego -> se recupera
-function moverJefe(e, dt) {
+// Devuelve la velocidad [vx, vy] para que un disparo salga desde (x, y) hacia Cocardo
+function apuntar(x, y, v) {
+    const dx = p.x + p.w / 2 - x, dy = p.y + p.h / 2 - y, L = Math.hypot(dx, dy) || 1;
+    return [dx / L * v, dy / L * v];
+}
+
+// Torreta: se ilumina un instante antes de disparar y dispara apuntando (los bloques sirven de cobertura)
+function moverTorreta(e, dt) {
+    if (enTransicion) return;
     e.t -= dt;
-    const haciaJugador = p.x > e.x ? 1 : -1;
-    if (e.estado === "activo") {
-        const lejos = Math.abs(p.x - e.x) > 700;
-        const meta = Math.max(e.min, Math.min(e.max, p.x + p.w / 2 - e.w / 2));
-        if (!lejos && Math.abs(meta - e.x) > 2) e.x += Math.sign(meta - e.x) * e.vel * dt;
-        if (e.t <= 0 && !lejos) {
-            e.ataque = Math.random() < 0.5 ? "embestida" : "fuego";
-            cambiarEstado(e, "aviso", 38);
+    const cerca = Math.abs(p.x - e.x) < 460;
+    e.el.dataset.estado = cerca && e.t < 28 ? "aviso" : "activo";
+    if (e.t > 0) return;
+    e.t = e.cad;
+    if (!cerca) return;
+    const x = e.x + e.w / 2 + (p.x > e.x ? 18 : -18), y = e.y + 14;
+    const [vx, vy] = apuntar(x, y, 3.8);
+    lanzar(x - 9, y - 9, vx, true, vy);
+}
+
+// Jefe: persigue -> avisa (tiembla y se agazapa) -> ataca (embestida, disparos o salto) -> se recupera
+function moverJefe(e, dt) {
+    if (enTransicion) return;
+    e.t -= dt; e.poseT -= dt;
+    const cJ = p.x + p.w / 2, cE = e.x + e.w / 2, haciaJugador = cJ > cE ? 1 : -1;
+    switch (e.estado) {
+        case "activo": {
+            e.mira = haciaJugador;
+            const lejos = Math.abs(cJ - cE) > 700;
+            const meta = limitar(cJ - e.w / 2, e.min, e.max);
+            if (!lejos && Math.abs(meta - e.x) > 2) { e.x += Math.sign(meta - e.x) * e.vel * dt; e.anim += e.vel * dt * 0.07; }
+            if (e.t <= 0 && !lejos) {
+                e.ataque = e.ultimoAtaque = elegir(e.ataques.filter(a => a !== e.ultimoAtaque));
+                cambiarEstado(e, "aviso", e.aviso);
+            }
+            break;
         }
-    } else if (e.estado === "aviso") {
-        if (e.t <= 0) {
+        case "aviso":
+            e.mira = haciaJugador;
+            if (e.t > 0) break;
             if (e.ataque === "fuego") {
-                [[25, 4], [55, 5], [85, 6]].forEach(([y, v]) =>
-                    lanzar(haciaJugador < 0 ? e.x - 18 : e.x + e.w, y, v * haciaJugador, true));
-                cambiarEstado(e, "recupera", 40);
+                dispararJefe(e, haciaJugador);
+                e.pose = 3; e.poseT = 22;
+                cambiarEstado(e, "recupera", 45);
+            } else if (e.ataque === "salto") {
+                e.dir = haciaJugador; e.vy = 11;
+                e.vsalto = limitar(Math.abs(cJ - cE) / 36, 1.8, 6.5);   // cae más o menos donde estabas
+                cambiarEstado(e, "salto", 999);
             } else {
                 e.dir = haciaJugador;
                 temblor();
                 cambiarEstado(e, "embestida", 45);
             }
-        }
-    } else if (e.estado === "embestida") {
-        e.x += e.dir * e.vel * 4 * dt;
-        if (e.x <= e.min || e.x >= e.max || e.t <= 0) {
-            e.x = Math.max(e.min, Math.min(e.max, e.x));
-            cambiarEstado(e, "recupera", 50);
-        }
-    } else if (e.t <= 0) {
-        cambiarEstado(e, "activo", e.cad);
+            break;
+        case "embestida":
+            e.x += e.dir * e.vel * 4 * dt; e.anim += 0.3 * dt;
+            if (e.x <= e.min || e.x >= e.max || e.t <= 0) {
+                e.x = limitar(e.x, e.min, e.max);
+                cambiarEstado(e, "recupera", 50);
+            }
+            break;
+        case "salto":
+            e.x = limitar(e.x + e.dir * e.vsalto * dt, e.min, e.max);
+            e.vy -= GRAV * dt; e.y += e.vy * dt;
+            if (e.y <= 0 && e.vy < 0) {
+                e.y = 0; e.vy = 0;
+                temblor();
+                if (e.onda) lanzarOnda(e);
+                cambiarEstado(e, "recupera", 55);
+            }
+            break;
+        default:   // recupera
+            if (e.t <= 0) cambiarEstado(e, "activo", e.cad);
     }
+}
+
+function dispararJefe(e, dir) {
+    const x = dir > 0 ? e.x + e.w : e.x - 18;
+    if (e.fuego === "recto") {           // tres disparos rectos a distinta altura
+        [[25, 1], [55, 1.15], [85, 1.3]].forEach(([y, k]) => lanzar(x, y, e.vf * k * dir, true));
+    } else {                             // abanico apuntado a Cocardo
+        const y = 45, [vx, vy] = apuntar(x, y, e.vf), base = Math.atan2(vy, vx), n = e.n || 3;
+        for (let i = 0; i < n; i++) {
+            const a = base + (i - (n - 1) / 2) * 0.26;
+            lanzar(x, y, Math.cos(a) * e.vf, true, Math.sin(a) * e.vf);
+        }
+    }
+}
+
+// Onda de choque al aterrizar: dos disparos bajos que hay que saltar
+function lanzarOnda(e) {
+    const c = e.x + e.w / 2, v = e.vf * 0.85;
+    lanzar(c + e.w / 2 - 6, 2, v, true, 0, 28, 14);
+    lanzar(c - e.w / 2 - 22, 2, -v, true, 0, 28, 14);
 }
 
 function cambiarEstado(e, estado, t) {
@@ -545,16 +721,16 @@ function temblor() {
     zonaJuego.classList.add("tiembla");
 }
 
-function lanzar(x, y, vx, hostil) {
-    const w = hostil ? 18 : 16, h = hostil ? 18 : 6;
-    disparos.push({ x, y, vx, w, h, hostil, el: crear(hostil ? "disparo enemigoDisparo" : "disparo", 0, 0, w, h) });
+function lanzar(x, y, vx, hostil, vy = 0, w, h) {
+    w = w || (hostil ? 18 : 16); h = h || (hostil ? 18 : 6);
+    disparos.push({ x, y, vx, vy, w, h, hostil, el: crear(hostil ? "disparo enemigoDisparo" : "disparo", 0, 0, w, h) });
 }
 
 function moverDisparos(dt) {
     for (let i = disparos.length - 1; i >= 0; i--) {
         const d = disparos[i];
-        d.x += d.vx * dt;
-        let borrar = d.x < 0 || d.x > nivel.ancho || bloques.some(b => !b.unaVia && solapa(d, b));
+        d.x += d.vx * dt; d.y += d.vy * dt;
+        let borrar = d.x < -30 || d.x > nivel.ancho + 30 || d.y < -4 || d.y > 420 || bloques.some(b => solapa(d, b));
         if (!borrar && d.hostil && solapa(d, p)) { danar(d.vx > 0 ? 1 : -1); borrar = true; }
         if (!borrar && !d.hostil) {
             const e = enemigos.find(en => solapa(d, en));
@@ -569,10 +745,11 @@ function golpear(e) {
     e.el.classList.add("golpeado");
     setTimeout(() => e.el.classList.remove("golpeado"), 90);
     if (e.jefe) {
-        e.barra.style.width = Math.max(0, e.vida / e.vidaMax * 100) + "%";
+        jefeVida.style.width = Math.max(0, e.vida / e.vidaMax * 100) + "%";
         if (!e.furia && e.vida > 0 && e.vida <= e.vidaMax / 2) {   // a mitad de vida se enfurece
-            e.furia = true; e.vel *= 1.3; e.cad *= 0.7;
+            e.furia = true; e.vel *= 1.3; e.cad *= 0.7; e.aviso = Math.round(e.aviso * 0.8); e.vf *= 1.1;
             e.el.classList.add("furia");
+            jefeVida.classList.add("furia");
             mostrarAviso("THE BOSS IS ENRAGED!", 1400);
             decir(elegir(DIALOGOS.jefeFuria[nivelActual]), 3);
         }
@@ -581,7 +758,7 @@ function golpear(e) {
 
     enemigos.splice(enemigos.indexOf(e), 1);
     puntos += e.pts;
-    if (!e.jefe) balas += 2;
+    if (!e.jefe) balas += BALAS_ENEMIGO;
     actualizarHUD();
     if (e.jefe) {
         e.el.classList.add("muere");
@@ -597,11 +774,14 @@ function recogerItems() {
     for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
         if (!solapa(p, it)) continue;
-        if (it.t === "b") { balas += 5; puntos += 10; } else { puntos += 25; }
+        if (it.t === "v" && vida >= VIDAS_MAX) continue;      // con la vida llena el corazón queda en el mapa
+        if (it.t === "b") { balas += BALAS_ITEM; puntos += 10; }
+        else if (it.t === "v") { vida++; puntos += 15; }
+        else puntos += 25;
         it.el.remove();
         items.splice(i, 1);
         actualizarHUD();
-        if (listo("item", 6000)) decir(elegir(it.t === "b" ? DIALOGOS.balas : DIALOGOS.moneda), 1);
+        if (listo("item", 6000)) decir(elegir(it.t === "b" ? DIALOGOS.balas : it.t === "v" ? DIALOGOS.corazon : DIALOGOS.moneda), 1);
     }
 }
 
@@ -634,7 +814,7 @@ function dibujar() {
     jugador.classList.toggle("mirandoIzq", p.dir < 0);
     jugador.classList.toggle("disparando", p.flash > 0);
     jugador.classList.toggle("herido", p.invul > 0);
-    enemigos.forEach(e => poner(e.el, e.x, e.y));
+    enemigos.forEach(e => { poner(e.el, e.x, e.y); if (e.jefe) animarJefe(e); });
     disparos.forEach(d => poner(d.el, d.x, d.y));
 
     const cx = Math.round(camX);
@@ -644,4 +824,22 @@ function dibujar() {
     capas.forEach(([el, factor, tile]) => {
         el.style.transform = `translate3d(${-((camX * factor) % tile)}px, 0, 0)`;
     });
+}
+
+// ================= TORMENTA TÓXICA =================
+// Cada tanto cae un rayo: destello en todo el cielo y un relámpago dibujado detrás de la ciudad
+function programarRayo() {
+    clearTimeout(tRayo);
+    tRayo = setTimeout(() => { lanzarRayo(); programarRayo(); }, 2500 + Math.random() * 5500);
+}
+
+function lanzarRayo() {
+    if (!juegoActivo) return;
+    rayo.style.left = (8 + Math.random() * 80) + "%";
+    rayo.style.transform = `scaleX(${Math.random() < 0.5 ? -1 : 1})`;
+    for (const el of [rayo, relampago]) {
+        el.classList.remove("on");
+        void el.offsetWidth;   // reinicia la animación
+        el.classList.add("on");
+    }
 }
