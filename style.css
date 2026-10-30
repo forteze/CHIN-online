@@ -423,21 +423,36 @@ body {
     --formaCiudad: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 140' preserveAspectRatio='none'%3E%3Cpath d='M0 140V80H40V40H90V90H130V20H190V70H230V50H290V100H340V30H400V80H450V60H500V140Z'/%3E%3C/svg%3E");
 }
 
-/* Cada zona tiene su paleta */
-#zonaJuego {
-    --cielo1: #151a24; --cielo2: #090b10; --lejos: #1d2536; --cerca: #121722;
-    --bicho: #7bd234; --acento: #ff3030; --bloque: #555b66; --bloqueBorde: #737985;
-    background: linear-gradient(var(--cielo1), var(--cielo2));
+/* Cada zona tiene su paleta: tormenta tóxica */
+#zonaJuego,
+#zonaJuego.zona1 {
+    --cielo1: #07120f; --cielo2: #1f3a14; --brillo: rgba(150, 255, 60, 0.20);
+    --lejos: #14291c; --cerca: #0b1a12;
+    --nubeClara: rgba(120, 210, 70, 0.30); --nubeOscura: rgba(4, 14, 10, 0.75);
+    --acido: #8dff2a; --acidoOscuro: #2f8f10;
+    --bicho: #ff8a3c; --acento: #9dff3a; --malo: #ff4630;
+    --bloque: #4a5a4e; --bloqueBorde: #7f9a86; --sueloColor: #1b2a20;
+    background:
+        radial-gradient(ellipse 90% 60% at 50% 105%, var(--brillo), transparent 70%),
+        linear-gradient(var(--cielo1), var(--cielo2));
 }
 
 #zonaJuego.zona2 {
-    --cielo1: #1b1533; --cielo2: #0a0912; --lejos: #2b2350; --cerca: #181330;
-    --bicho: #c56cf0; --acento: #b45cff; --bloque: #5b5470; --bloqueBorde: #8478a8;
+    --cielo1: #14110a; --cielo2: #44380c; --brillo: rgba(255, 190, 40, 0.22);
+    --lejos: #2b2410; --cerca: #19150a;
+    --nubeClara: rgba(210, 190, 60, 0.30); --nubeOscura: rgba(18, 12, 4, 0.78);
+    --acido: #d4ff2e; --acidoOscuro: #7f9a0c;
+    --bicho: #ff4f6e; --acento: #ffb52e; --malo: #ff9d1f;
+    --bloque: #5c513d; --bloqueBorde: #96845f; --sueloColor: #2a2316;
 }
 
 #zonaJuego.zona3 {
-    --cielo1: #2a0d12; --cielo2: #0d0405; --lejos: #4a1a22; --cerca: #2a0f14;
-    --bicho: #ffa03c; --acento: #ff7a1a; --bloque: #6a4a44; --bloqueBorde: #9a716a;
+    --cielo1: #120720; --cielo2: #3b0d45; --brillo: rgba(200, 80, 255, 0.24);
+    --lejos: #2a1245; --cerca: #170a28;
+    --nubeClara: rgba(190, 80, 255, 0.30); --nubeOscura: rgba(10, 2, 18, 0.78);
+    --acido: #c35bff; --acidoOscuro: #5c1a8c;
+    --bicho: #5be7ff; --acento: #d65cff; --malo: #ff5bd0;
+    --bloque: #4c4666; --bloqueBorde: #8b80b5; --sueloColor: #20152f;
 }
 
 .capa {
@@ -449,17 +464,20 @@ body {
     z-index: 0;
 }
 
-.capaEstrellas {
+.capaNubes {
     top: 0;
-    height: 60%;
-    opacity: 0.7;
+    height: 62%;
+    opacity: 0.95;
     background-image:
-        radial-gradient(circle 2px at 30px 40px, #fff, transparent),
-        radial-gradient(circle 1.5px at 120px 90px, #fff, transparent),
-        radial-gradient(circle 2px at 210px 20px, #cfe8ff, transparent),
-        radial-gradient(circle 1.5px at 260px 120px, #fff, transparent);
-    background-size: 300px 160px;
+        radial-gradient(ellipse 150px 50px at 120px 60px, var(--nubeClara), transparent 70%),
+        radial-gradient(ellipse 230px 72px at 380px 40px, var(--nubeOscura), transparent 72%),
+        radial-gradient(ellipse 180px 55px at 560px 105px, var(--nubeClara), transparent 70%),
+        radial-gradient(ellipse 270px 80px at 250px 135px, var(--nubeOscura), transparent 74%);
+    background-size: 600px 190px;
+    animation: derivaNubes 45s linear infinite;
 }
+
+@keyframes derivaNubes { to { background-position-x: -600px; } }
 
 .capaMontanas,
 .capaCiudad {
@@ -522,15 +540,20 @@ body {
 
 .suelo {
     position: absolute;
-    background: #292d35;
+    background: var(--sueloColor);
     border-top: 4px solid var(--acento);
+    box-shadow: 0 -3px 14px -2px var(--acido);
     z-index: 4;
 }
 
 .bloque,
 .plataforma {
     position: absolute;
-    background: var(--bloque);
+    background-color: var(--bloque);
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.22) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.22) 2px, transparent 2px);
+    background-size: 20px 20px;
     border: 2px solid var(--bloqueBorde);
     box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35);
     z-index: 15;
@@ -581,54 +604,97 @@ body {
 .pata:nth-child(even) { animation-direction: alternate-reverse; }
 @keyframes pata { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
 
-/* Jefe: monstruo con ojos brillantes, colmillos y estados de ataque */
-.esJefe svg {
+/* Jefes: sprites de las hojas (img/), una tira para andar y otra para atacar */
+.esJefe { overflow: visible; }
+
+.cuerpoJefe {
     position: absolute;
-    left: -10%;
-    bottom: 0;
-    width: 120%;
-    height: 100%;
-    overflow: visible;
-    filter: drop-shadow(0 0 7px rgba(0, 0, 0, 0.9));
+    left: 50%;
+    bottom: -3px;
+    width: 0;
+    height: 0;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.9));
 }
 
-.esJefe.der svg { transform: scaleX(-1); }
-.cuerpoJefe { transform-origin: 60px 138px; animation: respiraJefe 1.4s ease-in-out infinite; }
-.ojoJefe { fill: var(--acento); filter: drop-shadow(0 0 4px var(--acento)); }
-.brazoJefe { transform-origin: 36px 62px; }
-.brazoJefe, .mandibula { transition: transform 0.15s; }
+.izq .cuerpoJefe { transform: scaleX(-1); }
+
+.sprite {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    translate: -50% 0;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.sAtaque { display: none; }
 
 .esJefe[data-estado="aviso"] .cuerpoJefe { animation: temblorJefe 0.08s linear infinite; }
-.esJefe[data-estado="aviso"] .brazoJefe { transform: rotate(-40deg); }
-.esJefe[data-estado="aviso"] .mandibula,
-.esJefe[data-estado="embestida"] .mandibula { transform: translateY(7px); }
-.esJefe[data-estado="aviso"] .ojoJefe,
-.esJefe.furia .ojoJefe { filter: brightness(1.8) drop-shadow(0 0 8px var(--acento)); }
-.esJefe[data-estado="embestida"] .cuerpoJefe { animation: none; transform: rotate(-9deg); }
-.esJefe.furia svg { filter: drop-shadow(0 0 12px var(--acento)); }
-.esJefe.muere svg { animation: muerte 1s forwards; }
+.esJefe.furia .cuerpoJefe { filter: drop-shadow(0 0 10px var(--malo)) saturate(1.5) brightness(1.1); }
+.esJefe.muere .cuerpoJefe { animation: muerte 1s forwards; }
 
-@keyframes respiraJefe { 50% { transform: scaleY(1.03); } }
-@keyframes temblorJefe { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes temblorJefe { 0%, 100% { translate: -2px 0; } 50% { translate: 2px 0; } }
 @keyframes muerte { 0% { filter: brightness(3); } 100% { filter: brightness(0); opacity: 0; } }
 
-.barraJefe {
+/* Barra de vida del jefe (arriba, bajo el HUD) */
+#jefeHUD {
     position: absolute;
-    top: -16px;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: #300;
-    border: 1px solid #000;
+    top: 34px;
+    left: 50%;
+    width: 240px;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
 }
 
-.barraJefe i {
+#jefeHUD.visible { opacity: 1; }
+
+#jefeNombre {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--acento);
+    text-shadow: 0 0 8px var(--acento);
+}
+
+#jefeHUD .barra {
+    height: 9px;
+    margin-top: 3px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #000;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+#jefeVida {
     display: block;
     height: 100%;
     width: 100%;
-    background: #ff3030;
+    background: linear-gradient(#ff6a4a, #c4221a);
     transition: width 0.15s;
 }
+
+#jefeVida.furia {
+    background: linear-gradient(#ffd24a, #ff6a00);
+    animation: parpadeo 0.5s steps(2) infinite;
+}
+
+/* Voladores y torretas */
+.volador svg,
+.torreta svg { width: 100%; height: 100%; overflow: visible; }
+
+.torreta:not(.der) svg { transform: scaleX(-1); }
+.cuerpoTorreta { fill: var(--bicho); stroke: rgba(0, 0, 0, 0.55); stroke-width: 1.4; }
+.ojoTorreta { fill: #ff4a4a; filter: drop-shadow(0 0 3px #ff4a4a); }
+.torreta[data-estado="aviso"] .ojoTorreta { fill: #fff; filter: drop-shadow(0 0 10px var(--malo)) brightness(1.8); }
+
+.ala { transform-box: fill-box; animation: aleteo 0.12s ease-in-out infinite alternate; }
+.alaI { transform-origin: 100% 100%; }
+.alaD { transform-origin: 0 100%; animation-direction: alternate-reverse; }
+@keyframes aleteo { from { transform: rotate(-26deg); } to { transform: rotate(20deg); } }
 
 .golpeado {
     filter: brightness(2.5);
@@ -645,10 +711,17 @@ body {
 }
 
 .enemigoDisparo {
-    background: radial-gradient(circle, #fff, var(--acento));
+    background: radial-gradient(circle, #fff, var(--malo));
     border-radius: 50%;
-    box-shadow: 0 0 10px var(--acento);
+    box-shadow: 0 0 10px var(--malo);
 }
+
+.zona3 .enemigoDisparo {
+    background: conic-gradient(#ff3b3b, #ffd23b, #5bff7a, #3bd7ff, #b04dff, #ff3b3b);
+    animation: giraDisparo 0.4s linear infinite;
+}
+
+@keyframes giraDisparo { to { rotate: 360deg; } }
 
 .tutorial {
     flex-wrap: wrap;
@@ -888,3 +961,128 @@ body {
 .dialogoFinal:empty {
     display: none;
 }
+
+
+@keyframes ondas { to { background-position-x: 20px; } }
+@keyframes burbujas { to { transform: translateY(-14px); opacity: 0.4; } }
+
+
+/* Tormenta tóxica: niebla, lluvia ácida y rayos */
+#niebla {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 45px;
+    height: 130px;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--acido) -40%, transparent);
+    opacity: 0.22;
+    animation: respiraNiebla 6s ease-in-out infinite alternate;
+}
+
+@keyframes respiraNiebla { to { opacity: 0.1; } }
+
+#lluvia {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.7;
+}
+
+#lluvia::before,
+#lluvia::after {
+    content: "";
+    position: absolute;
+    inset: -140px 0 0 0;
+    background-repeat: repeat;
+}
+
+#lluvia::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='47' height='113'%3E%3Cline x1='30' y1='8' x2='25' y2='30' stroke='%23b8ff8c' stroke-width='1.3' stroke-linecap='round' opacity='.8'/%3E%3Cline x1='8' y1='70' x2='3' y2='94' stroke='%23b8ff8c' stroke-width='1' stroke-linecap='round' opacity='.6'/%3E%3C/svg%3E");
+    background-size: 47px 113px;
+    animation: lluviaA 0.55s linear infinite;
+}
+
+#lluvia::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='71' height='137'%3E%3Cline x1='50' y1='20' x2='46' y2='38' stroke='%23b8ff8c' stroke-width='1' stroke-linecap='round' opacity='.55'/%3E%3Cline x1='14' y1='96' x2='10' y2='116' stroke='%23b8ff8c' stroke-width='1' stroke-linecap='round' opacity='.45'/%3E%3C/svg%3E");
+    background-size: 71px 137px;
+    animation: lluviaB 0.8s linear infinite;
+}
+
+@keyframes lluviaA { to { background-position: 0 113px; } }
+@keyframes lluviaB { to { background-position: 0 137px; } }
+
+#zonaJuego.zona2 #lluvia { filter: hue-rotate(-45deg); }
+#zonaJuego.zona3 #lluvia { filter: hue-rotate(170deg); }
+
+#relampago {
+    position: absolute;
+    inset: 0;
+    z-index: 39;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(ellipse 80% 70% at 50% 0%, rgba(235, 255, 220, 0.95), rgba(140, 255, 90, 0.28) 55%, transparent 80%);
+}
+
+#relampago.on { animation: destello 0.7s ease-out; }
+
+@keyframes destello {
+    0% { opacity: 0; }
+    6% { opacity: 0.85; }
+    14% { opacity: 0.1; }
+    22% { opacity: 0.6; }
+    40% { opacity: 0.08; }
+    100% { opacity: 0; }
+}
+
+#rayo {
+    position: absolute;
+    top: 0;
+    height: 62%;
+    width: 60px;
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 0 6px #d8ffc0) drop-shadow(0 0 14px var(--acido));
+}
+
+#rayo svg { width: 100%; height: 100%; fill: none; stroke: #f4ffe8; stroke-width: 3; stroke-linejoin: round; overflow: visible; }
+#rayo.on { animation: caeRayo 0.7s linear; }
+
+@keyframes caeRayo {
+    0% { opacity: 0; }
+    6%, 22% { opacity: 1; }
+    14% { opacity: 0.2; }
+    100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #lluvia::before, #lluvia::after, #relampago, #rayo, .capaNubes, #niebla { animation: none !important; }
+}
+
+
+/* Jefes en la web: sprite animado en las tarjetas */
+.icono.bestia {
+    width: 190px;
+    height: 110px;
+    margin: 0 auto 20px;
+    background-repeat: no-repeat;
+    background-size: 800% auto;
+    background-position: 0 100%;
+    image-rendering: pixelated;
+}
+
+.jefe:hover .bestia { animation: anda 0.9s steps(8, jump-none) infinite; }
+@keyframes anda { to { background-position: 100% 100%; } }
+
+.bestia.guardian { background-image: url("img/guardian_andar.png"); }
+.bestia.mutante { background-image: url("img/mutante_andar.png"); }
+.bestia.misterio {
+    background-image: url("img/final_andar.png");
+    filter: brightness(0) drop-shadow(0 0 8px #b24dff);
+}
+.jefe:hover .bestia.misterio { filter: brightness(0) drop-shadow(0 0 14px #ff5bd0); }
